@@ -1,27 +1,29 @@
 from src.devices.AppleTv import AppleTv
 from src.repositories.ContentRepository import ContentRepository
+from src.services import LoggerService
 
 
 class CollectorService:
-    def __init__(self, devices: list[AppleTv], content_repository: ContentRepository):
+    def __init__(self, devices: list[AppleTv], content_repository: ContentRepository, logger_service: LoggerService):
         self.devices = devices
         self.content_repository = content_repository
+        self.logger_service = logger_service
 
     async def collect(self, loop):
         for device in self.devices:
-            print(f"Trying to collect data from {device.name}")
+            self.logger_service.log(f"Trying to collect data from {device.name}")
 
             if not await device.get_is_connected():
-                print(f"Device {device.name} is not connected, trying to connect...")
+                self.logger_service.log(f"Device {device.name} is not connected, trying to connect...")
                 await device.connect(loop)
-                print(f"Device {device.name} connected")
+                self.logger_service.log(f"Device {device.name} connected")
 
             if not await device.is_playing():
-                print(f"Device {device.name} is not playing, skipping...")
+                self.logger_service.log(f"Device {device.name} is not playing, skipping...")
                 continue
 
             playback_info = await device.get_playback_info()
-            print(f"Playback info from device {device.name}: {playback_info}")
+            self.logger_service.log(f"Playback info from device {device.name}: {playback_info}")
             self.content_repository.insert_record([
                 playback_info["title"],
                 playback_info["artist"],
@@ -31,4 +33,4 @@ class CollectorService:
                 playback_info["device"],
                 playback_info["media_type"],
             ])
-            print(f"Saved to database content from {device.name}")
+            self.logger_service.log(f"Saved to database content from {device.name}")

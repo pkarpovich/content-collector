@@ -5,6 +5,8 @@ from pyatv import connect, scan
 from pyatv.const import Protocol, DeviceState
 from pyatv.exceptions import AuthenticationError
 
+from src.services import LoggerService
+
 
 class PlaybackInfo(TypedDict):
     title: str
@@ -17,18 +19,19 @@ class PlaybackInfo(TypedDict):
 
 
 class AppleTv:
-    def __init__(self, name: str, identifiers: set[str | None], credentials: dict[Protocol, str]):
+    def __init__(self, name: str, identifiers: set[str | None], credentials: dict[Protocol, str], logger_service: LoggerService):
         self.name = name
         self.identifiers = identifiers
         self.credentials = credentials
 
+        self.logger_service = logger_service
         self.atv = None
 
     async def connect(self, loop):
         confs = await scan(loop, identifier=self.identifiers)
 
         if not confs:
-            print("Device could not be found", file=sys.stderr)
+            self.logger_service.log(f"Device {self.name} not found")
             return
 
         conf = confs[0]
@@ -38,7 +41,7 @@ class AppleTv:
         try:
             self.atv = await connect(conf, loop)
         except AuthenticationError as ex:
-            print("Device error: ", ex)
+            self.logger_service.log(f"Authentication error: {ex}")
 
     async def get_is_connected(self):
         return self.atv is not None

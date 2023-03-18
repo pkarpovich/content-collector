@@ -1,19 +1,20 @@
 import asyncio
-import sys
 
-import pyatv
-from pyatv.const import Protocol, DeviceState
+from pyatv.const import Protocol
 from os import environ as env
 from dotenv import load_dotenv
 
 from repositories.ContentRepository import ContentRepository
 from devices.AppleTv import AppleTv
 from services.CollectorService import CollectorService
+from services.LoggerService import LoggerService
 
 load_dotenv()
 
 Database_Path = env.get('DATABASE_PATH', 'content_history.db')
 Sleep_Timeout = int(env.get('SLEEP_TIMEOUT', 60))
+
+logger_service = LoggerService()
 
 def init_devices():
     living_room = AppleTv(
@@ -24,6 +25,7 @@ def init_devices():
             Protocol.Companion: env.get('ATV_COMPANION_CREDENTIALS'),
             Protocol.RAOP: env.get('ATV_RAOP_CREDENTIALS'),
         },
+        logger_service=logger_service
     )
 
     return [living_room]
@@ -34,10 +36,11 @@ def init_content_repo():
 
 
 async def collect_playback_data(loop, devices: list[AppleTv], content_repo: ContentRepository):
-    collector = CollectorService(devices, content_repo)
+    collector = CollectorService(devices, content_repo, logger_service)
     while True:
         await collector.collect(loop)
-        print(f"Sleeping for {Sleep_Timeout} seconds...")
+        logger_service.log(f"Sleeping for {Sleep_Timeout} seconds...")
+        logger_service.log("========================================")
         await asyncio.sleep(Sleep_Timeout)
 
 if __name__ == "__main__":
