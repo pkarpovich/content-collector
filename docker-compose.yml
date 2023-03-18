@@ -1,0 +1,8 @@
+services:
+  content-collector:
+    build: .
+    container_name: content-collector
+    network_mode: host
+
+volumes:
+    content_db_data:

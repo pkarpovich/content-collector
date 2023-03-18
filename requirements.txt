@@ -1,0 +1,4 @@
+pyatv==0.10.3
+python-dotenv==1.0.0
+pydantic==1.10.6
+duckdb==0.7.1
