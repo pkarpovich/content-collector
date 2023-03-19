@@ -2,6 +2,7 @@ services:
   content-collector:
     build: .
     container_name: content-collector
+    restart: unless-stopped
     network_mode: host
     volumes:
       - ./data:/app/data
