@@ -39,6 +39,8 @@ class AppleTv:
 
         try:
             self.atv = await connect(conf, loop)
+
+            return self.atv
         except AuthenticationError as ex:
             self.logger_service.log(f"Authentication error: {ex}")
 
