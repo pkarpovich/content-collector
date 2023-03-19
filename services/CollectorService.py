@@ -1,6 +1,6 @@
-from src.devices.AppleTv import AppleTv
-from src.repositories.ContentRepository import ContentRepository
-from src.services import LoggerService
+from devices.AppleTv import AppleTv
+from repositories.ContentRepository import ContentRepository
+from services import LoggerService
 
 
 class CollectorService:
@@ -15,7 +15,10 @@ class CollectorService:
 
             if not await device.get_is_connected():
                 self.logger_service.log(f"Device {device.name} is not connected, trying to connect...")
-                await device.connect(loop)
+                atv = await device.connect(loop)
+                if atv is None:
+                    continue
+
                 self.logger_service.log(f"Device {device.name} connected")
 
             if not await device.is_playing():

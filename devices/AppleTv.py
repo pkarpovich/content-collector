@@ -1,11 +1,10 @@
-import sys
 from typing import TypedDict
 
 from pyatv import connect, scan
 from pyatv.const import Protocol, DeviceState
 from pyatv.exceptions import AuthenticationError
 
-from src.services import LoggerService
+from services import LoggerService
 
 
 class PlaybackInfo(TypedDict):
@@ -32,7 +31,7 @@ class AppleTv:
 
         if not confs:
             self.logger_service.log(f"Device {self.name} not found")
-            return
+            return None
 
         conf = confs[0]
         for protocol, credentials in self.credentials.items():
