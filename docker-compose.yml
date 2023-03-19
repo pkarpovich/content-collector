@@ -3,6 +3,8 @@ services:
     build: .
     container_name: content-collector
     network_mode: host
+    volumes:
+      - ./data:/app/data
 
 volumes:
     content_db_data:

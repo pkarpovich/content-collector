@@ -11,7 +11,7 @@ from services.LoggerService import LoggerService
 
 load_dotenv()
 
-Database_Path = env.get('DATABASE_PATH', 'content_history.db')
+Database_Path = env.get('DATABASE_PATH', './data/content_history.db')
 Sleep_Timeout = int(env.get('SLEEP_TIMEOUT', 60))
 
 logger_service = LoggerService()
