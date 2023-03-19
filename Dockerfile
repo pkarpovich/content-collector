@@ -1,6 +1,6 @@
-FROM python:3.11
+FROM python:3.11-alpine
 WORKDIR /app
-RUN apt-get update && apt-get install -y dumb-init
+RUN apk add dumb-init libffi-dev alpine-sdk
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
