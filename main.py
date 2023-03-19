@@ -16,6 +16,7 @@ Sleep_Timeout = int(env.get('SLEEP_TIMEOUT', 60))
 
 logger_service = LoggerService()
 
+
 def init_devices():
     living_room = AppleTv(
         name=env.get('ATV_NAME'),
@@ -35,19 +36,29 @@ def init_content_repo():
     return ContentRepository(Database_Path)
 
 
-async def collect_playback_data(loop, devices: list[AppleTv], content_repo: ContentRepository):
-    collector = CollectorService(devices, content_repo, logger_service)
+async def collect_playback_data(loop, collector: CollectorService):
     while True:
         await collector.collect(loop)
         logger_service.log(f"Sleeping for {Sleep_Timeout} seconds...")
         logger_service.log("========================================")
         await asyncio.sleep(Sleep_Timeout)
 
-if __name__ == "__main__":
-    LOOP = asyncio.new_event_loop()
-    asyncio.set_event_loop(LOOP)
+
+def main():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
 
     content_repo = init_content_repo()
     devices = init_devices()
+    collector = CollectorService(devices, content_repo, logger_service)
 
-    LOOP.run_until_complete(collect_playback_data(LOOP, devices, content_repo))
+    try:
+        loop.run_until_complete(collect_playback_data(loop, collector))
+    except KeyboardInterrupt:
+        pass
+    finally:
+        list(map(lambda device: device.atv.close(), devices))
+
+
+if __name__ == '__main__':
+    main()

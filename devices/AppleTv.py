@@ -2,7 +2,9 @@ from typing import TypedDict
 
 from pyatv import connect, scan
 from pyatv.const import Protocol, DeviceState
+from pyatv.exceptions import BlockedStateError
 from pyatv.exceptions import AuthenticationError
+from pyatv.interface import AppleTV
 
 from services import LoggerService
 
@@ -18,7 +20,8 @@ class PlaybackInfo(TypedDict):
 
 
 class AppleTv:
-    def __init__(self, name: str, identifiers: set[str | None], credentials: dict[Protocol, str], logger_service: LoggerService):
+    def __init__(self, name: str, identifiers: set[str | None], credentials: dict[Protocol, str],
+                 logger_service: LoggerService):
         self.name = name
         self.identifiers = identifiers
         self.credentials = credentials
@@ -44,18 +47,26 @@ class AppleTv:
         except AuthenticationError as ex:
             self.logger_service.log(f"Authentication error: {ex}")
 
+    def get_device(self) -> AppleTV:
+        return self.atv
+
     async def get_is_connected(self):
         return self.atv is not None
 
     async def get_playing(self):
-        return await self.atv.metadata.playing()
+        try:
+            return await self.atv.metadata.playing()
+        except BlockedStateError:
+            return None
 
-    async def get_device_state(self):
+    async def get_device_state(self) -> DeviceState:
         playing = await self.get_playing()
-        return playing.device_state
+        if playing is not None:
+            return playing.device_state
+
+        return DeviceState.Stopped
 
     async def is_playing(self):
-
         return await self.get_device_state() == DeviceState.Playing
 
     async def get_playback_info(self) -> PlaybackInfo:
